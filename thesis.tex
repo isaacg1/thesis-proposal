@@ -1,0 +1,178 @@
+\documentclass[12pt]{article}
+\usepackage{geometry}
+\geometry{margin=1in}
+\begin{document}
+\section{Introduction}
+I research the area of analytical performance modeling and optimization of computer systems,
+with a particular focus on scheduling algorithms and resource allocation algorithms.
+I study how to optimally schedule jobs,
+in settings where job requirements (sizes),
+including CPU, network and memory requirements,
+are highly variable.
+Job sizes may be known in advance,
+roughly estimated,
+or completely unknown.
+
+Within such settings,
+the SIGMETRICS/Performance community has developed a strong understanding
+of how to optimally schedule jobs in a single-server system,
+when optimizing for mean job delay.
+The classic result in this area (Schrage 1968)
+says that in a single-server system with \textit{known job sizes},
+one should prioritize the shortest jobs to minimize mean job delay.
+Specifically, the result states that the optimal scheduling policy in this setting
+is the Shortest-Remaining-Processing-Time first (SRPT) policy.
+Beyond optimality results,
+we can derive the exact mean job delay for a wide variety of scheduling policies,
+including the SRPT policy.
+More recent optimaility results also exist in the single-server, mean-job-delay setting
+for unknown or approximately known job sizes (Gittins ?),
+as well as derivations of mean job delay in this setting (Scully ?).
+
+However, almost nothing is known outside of the single-server, mean-job-delay setting.
+In particular, almost nothing is known about optimal scheduling in multiserver systems,
+which consist of multiple servers and some routing mechanism for delivering jobs to servers.
+Likewise, almost nothing is known for job-delay objectives other than mean job delay,
+including tail objectives such as the 99th percentile of job delay
+or the probability that job delay is less than some threshold $t$.
+My goal in this thesis is to make progress towards understanding optimal scheduling
+in multiserver systems,
+and optimal scheduling for the tail of job delay.
+
+The multiserver setting is far more difficult to understand than the single-server setting,
+for multiple reasons.
+First, the state-space of possible system conditions grows exponentially
+with the number of servers,
+turning a one-dimensional question into a highly-multidimensional question.
+As a result, many tools developed for analyzing single-server systems
+become intractable to use on multiserver systems.
+Furthermore, multiserver systems are not work-conserving;
+there are times when there are fewer jobs present in the system than the number of servers,
+leading to not all servers being fully utilized.
+In contrast, most commonly studied single-server systems are work-conserving,
+and a host of tools have been developed to specifically analyze work-conserving systems.
+To understand multiserver systems, new analytical tools must be developed.
+
+Objectives that focus on the tail of job delay are also far more difficult to understand
+than the traditional objective of mean job delay.
+To analyze and optimize mean job delay, it suffices to use a ``tagged job analysis'' (? ?),
+where an arriving job need only consider the aggregate total work in the system.
+By contrast, when studying the tail of job delay, we cannot simply aggregate jobs.
+A job's contribution to the tail changes as the job spends longer in the system --
+a job becomes more relevant to the tail as it spends longer in the system.
+Thus we need to track the time in system of each job individually.
+
+As a result of these difficulties,
+the questions of optimal scheduling in multiserver sytems
+and optimal scheduling for tail objectives have remained open.
+Nonetheless, these questions are the ones we really want to answer for use in the real world.
+Real systems feature multiple servers by default.
+Computers have multiple processors,
+data centers have thousands of machines,
+and cloud systems operate at an even larger scale.
+Likewise, performance guarantees for latency-sensitive applications
+will typically focus on the tail of job delay, not the mean.
+
+This thesis will attempt to make progress on both goals:
+Understanding optimal scheduling in multiserver systems
+and optimal scheduling for the tail of job delay.
+
+\section{Results so far: Multiserver Systems}
+
+In the area of multiserver systems,
+most state-of-the-art results center around the First-Come-First-Served (FCFS) scheduling policy.
+Even within FCFS scheduling, surprisingly little is known from the perspective of exact analysis
+(Gupta, ?), (Gupta, ?).
+More precise results have only been derived using numerical methods,
+not with symbolic or analytical methods.
+Basic bounds on mean response time based on the job size distribution
+have long been known (Kingman, ?).
+More recently, tighter bounds have been derived (Daly, ?), (Osogami, ?).
+
+Despite the heavy focus on the FCFS policy, FCFS scheduling is nowhere near optimal.
+Instead, we want to study the SRPT scheduling policy for multiserver systems.
+The SRPT scheduling policy is optimal for single-server systems,
+and it stands to reason that SRPT scheduling might be at least near optimal
+for multiserver systems.
+Unfortunately, no analytical results exist on SRPT scheduling in multiserver systems.
+I decided to attack this problem, towards my goal of optimal scheduling in multiserver systems.
+
+In my paper in IFIP Performance 2018 (Grosof, 2018),
+I derived the first upper bound on mean response time for SRPT scheduling in multiserver systems.
+This is the first result of its kind for any non-trivial multiserver scheduling policy.
+My bound applies to any multiserver system
+where jobs arrive according to a Poisson process
+and job sizes are drawn i.i.d. from a (nearly) arbitrary job size distribution.
+In particular, my bound is tight enough to prove that the SRPT scheduling policy
+is optimal for multiserver systems,
+in the limit as system load approaches capacity.
+This is the first optimaility result known for any scheduling policy in a multiserver system.
+Moreover, my technique is general enough to prove bounds on several other scheduling policies,
+including a policy where job sizes are unknown.
+This paper won the Best Student Paper Award at IFIP Performance 2018,
+one of the two premier conferences in the performance modeling field.
+
+My next goal was to make these multiserver results more practical for use in real systems.
+The (Grosof, 2018) paper focused on a multiserver system with a \textit{central queue},
+where jobs are buffered in a central queue until a server becomes available for them to run on,
+and where each job can be preempted and migrated to another server with no cost or delay.
+Next, I turned to a \textit{dispatching}-based model of a multiserver system.
+In many real systems, one often has a front-end dispatcher (load balancer),
+and once a job is dispatched to a server,
+the job is never moved to another server.
+Such systems are known as load balancing systems.
+
+In the area of load balancing systems,
+most state-of-the-art results use the FCFS scheduling policy at the servers,
+and study any of a wide variety of dispatching policies.
+Dispatching policies that have been heavily analyzed include Join-the-Shortest-Queue (JSQ) (? ?),
+Power-of-d-Queues (? ?), Threshold dispatching policies (? ?) and many more.
+
+As with the central-queue multiserver setting,
+none of these dispatching policies are anywhere near optimal,
+especially in settings with high job size variability.
+Instead, we want to study load balancing systems that use SRPT scheduling at the servers.
+A simple theorem (Grosof, 2019) shows that an optimal policy for a load balancing system
+must include SRPT scheduling at the servers.
+Unforunately, no previous analytical results exist
+on load balancing systems using SRPT scheduling at the servers.
+I decided to attack this problem,
+to push towards my goal of optimal scheduling in multiserver systems.
+
+In my paper in SIGMETRICS/Performance 2019 (Grosof, 2019),
+I proved the first analytical result on load balancing systems with SRPT scheduling at the servers.
+In particular, I invented a novel resource allocation algorithm to dispatch jobs to servers,
+because the standard dispatching algorithms from the literature didn’t work well enough.
+More than a single algorithm,
+I created a general framework for turning a baseline dispatching algorithm
+into a provably near-optimal algorithm.
+I proved an upper bound on the mean response time
+in a load balancing system using any dispatching algorithm in my framework
+in concert with SRPT scheduling at the servers.
+This bound is tight enough to prove that any such combined policy
+is optimal in the limit as system load approaches capacity.
+This is the first optimality result known for any combined policy in a load balancing system.
+This paper won the Outstanding Student Paper Award at SIGMETRICS/Performance 2019,
+the collocation of the two premier conferences in the performance modeling field.
+
+\section{Future: Tail of Job Delay}
+My plan is to next tackle the area of the tail of job delay. First, I want to study the tail of job delay in single-server systems, since almost no results exist even in that simpler setting. Later, I want to study the tail of job delay in multiserver systems, to bring my results even closer to the real world.
+
+\subsection{Near Future: Single Server Tail}
+There are two possible directions I am exploring for studying the tail of job delay in single-server systems. First, there is the possibility of bounding the tail of job delay for existing policies. One useful starting point is the Laplace-Stiljes transform of the distribution of job response times, which is already known for many existing scheduling policies (Scully, ?). However, it is not simple to convert the transform of response times into a standard metric of tail performance such as a percentile of response time. The transform expressions are extremely complicated for all but the simplest scheduling policies, and no symbolic inversion technique is currently known. Only numerical inversion techniques are currently available, which do not allow us to prove analytical results. However, one avenue of potential progress is to lower our targets from an exact symbolic inverse to symbolic bounds on a percentile of response time. I hope to develop usable symbolic tools to bound the tail of resposne time for simple but nontrivial scheduling policies.
+
+Second, I hope to develop new optimal or near optimal scheduling policies to minimize metrics of the tail of response time. One surprisingly tricky question in this area is defining the right metric(s) to characterize the tail performance of a given scheduling policy. One popular type of tail metric is the percentile of job response time, such as the 99th percentile. Another type of metric of interest is the mean of response times above a given percentile. Many other tail metrics can be defined, such as higher moments of response time, the fraction of jobs completing under a given amount of time, or the mean amount by which jobs exceed a soft deadline. Each of these metrics corresponds to a different real-world setting, and each incentives different policies choices. Ideally, I want to prove novel results about a variety of different types of tail metrics, but different policies and tools may be required in different cases.
+
+Once we’ve chosen a metric for measuring the tail of job response time, we can start to construct an optimal or near-optimal policy using interchange arguments. An interchange argument compares the two orderings of a pair of jobs. Under some objectives, one can prove that one ordering is always strictly better than the opposite ordering, regardless of any other events happening in the system. In the case of the mean response time objective, one ordering is always strictly better than the other, for any pair of jobs. As a result, we can prove that one policy is optimal, the SRPT scheduling policy. With other objectives, the relationship between two orderings can sometimes be indeterminate. In this case, an interchange argument can narrow the space of possible scheduling policies to consider, without uniquely identifying an optimal policy. Furthermore, we can consider more than two jobs at a time to prove yet stronger results. I hope to use interchange arguments as a starting point to design optimal or near optimal policies in the tail metric setting.
+
+Another analytical tool that I would like to apply to this setting is the Multiarmed Bandit (MAB) literature. The MAB problem is a closely related problem to the question of optimal scheduling, and MAB has been exactly solved (Gittins, ?). This result was applied to scheduling problems, and gave rise to the Gittins Index policy, which is the optimal scheduling policy for mean response time given unknown or approximately known job sizes. Replacing mean resposne time with a metric of the tail of response time is equivalent to switching from the multiarmed bandit problem to the restless multiarmed bandit problem (RMAB). While the RMAB problem is not understood to the extent that the MAB problem is understood, RMAB is understood much better than scheduling for the tail of response time. I hope to apply RMAB theory to this problem, and thereby derive optimal or near optimal policies for metrics of the tail of response time, even in the presence of unknown job partially known job sizes.
+
+\subsection{Farther Future: Multiserver Tail}
+The question of scheduling to optimize the tail of job delay in a multiserver system is yet more difficult and open than the tail of job delay in a single server system. This extra complexity is illustrated by the following observation: In multiserver systems, long tails can be caused by wasted server capacity, but optimizing too aggressively for using server capacity can also cause long tails.
+
+In the former case, consider a scheduling policy like SRPT that always prioritizes short jobs. Under certain conditions, the system may finish all of its small jobs, leaving only a small number of large jobs slowly running on a couple of servers. These couple very long and slow jobs might dominate the tail of job delay. A better policy might have prioritized those large jobs earlier on, knowing that they would eventually contribute to the tail of job delay. By doing so, the system would spend less time with only a few servers occupied.
+
+In the latter case, consider a scheduling policy like longest remaining processing time (LRPT), which is known to keep as many servers occupied as possible. Under this scheduling policy, many small jobs are kept around until the system empties. This helps keep the servers occupied, but it also leads to a large number of jobs with a large response time, hurting the tail of response time.
+
+To optimize the tail of response time, I am looking for ways to balance this tradeoff, and avoid major failings in either direction.
+\end{document}
