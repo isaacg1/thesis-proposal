@@ -43,7 +43,7 @@ In particular, almost nothing is known about optimal scheduling in multiserver s
 which consist of multiple servers and some routing mechanism for delivering jobs to servers.
 Likewise, almost nothing is known for job-delay objectives other than mean job delay,
 including tail objectives such as the 99th percentile of job delay
-or the probability that job delay is less than some threshold $t$.
+or the probability that job delay exceeds some threshold $t$.
 My goal in this thesis is to make progress towards understanding optimal scheduling
 in multiserver systems,
 and optimal scheduling for the tail of job delay.
@@ -69,8 +69,8 @@ it suffices to use a ``tagged job analysis'' \cite{harchol2013performance},
 where an arriving job need only consider the aggregate total work in the system.
 By contrast, when studying the tail of job delay, we cannot simply aggregate jobs.
 A job's contribution to the tail changes as the job spends longer in the system --
-a job becomes more relevant to the tail as it spends longer in the system.
-Thus we need to track the time in system of each job individually.
+the job becomes more and more relevant to the tail over time.
+Thus, we need to track the time in system of each job individually.
 
 As a result of these difficulties,
 the questions of optimal scheduling in multiserver systems
@@ -158,18 +158,20 @@ to push towards my goal of optimal scheduling in multiserver systems.
 In my paper in SIGMETRICS/Performance 2019 \cite{Grosof:2019:LBG:3341617.3326157},
 I proved the first analytical result on load balancing systems with SRPT scheduling at the servers.
 In particular, I invented a novel resource allocation algorithm to dispatch jobs to servers,
-because the standard dispatching algorithms from the literature didn’t work well enough.
+because the standard dispatching algorithms from the literature didn't work well enough.
 More than a single algorithm,
-I created a general framework for turning a baseline dispatching algorithm
+I created a general framework, which we call \textit{guardrails},
+for turning any baseline dispatching algorithm
 into a provably near-optimal algorithm.
-I proved an upper bound on the mean job delay
-in a load balancing system using any dispatching algorithm in my framework
-in concert with SRPT scheduling at the servers.
-This bound is tight enough to prove that any such combined policy
-is optimal in the limit as system load approaches capacity.
-This is the first optimality result known for any combined policy in a load balancing system.
+The guardrails detect when the decisions of the baseline algorithm
+are becoming significantly suboptimal,
+and impose different choices in those situations.
+By doing so, the guardrails spread the small jobs across all of the servers,
+which ensures that the SRPT scheduling policy at the servers can always operate efficiently.
+This is the first optimality result known for any load balancing system
+with SRPT scheduling at the servers.
 This paper won the Outstanding Student Paper Award at SIGMETRICS/Performance 2019,
-the collocation of the two premier conferences in the performance modeling field.
+the co-location of the two premier conferences in the performance modeling field.
 
 \section{Future: Tail of Job Delay}
 Next, I plan to attack the area of the tail of job delay.
@@ -212,24 +214,21 @@ and each incentivizes different policy choices.
 Ideally, I want to prove novel results about a variety of different types of tail metrics,
 so that scheduling policies can be tailored to the real world objectives.
 
-Once we’ve chosen a metric for measuring the tail of job delay,
+Once we've chosen a metric for measuring the tail of job delay,
 we can apply a tool known as interchange arguments
 to the design of optimal or near-optimal scheduling policies.
 An interchange argument compares the two distinct orderings of a pair of jobs.
-Under some objectives,
-one can prove that one ordering is always strictly better than the opposite ordering,
-regardless of any other events happening in the system.
-In the case of the mean job delay objective,
-one ordering is always strictly better than the other,
-for any pair of jobs.
-As a result, we can use interchange arguments to prove that the SRPT scheduling policy is optimal,
-for that objective.
-Under other objectives,
-the strict improvement under one ordering may exist for some pairs of jobs but not for others.
-In this case, an interchange argument can narrow
-the space of possible scheduling policies to consider,
-but cannot uniquely identify an optimal policy.
-Furthermore, we can consider more than two jobs at a time to prove yet stronger results.
+For example, interchange arguments can be used to prove that the SRPT scheduling policy
+is optimal for mean job delay,
+because any ordering other than the SRPT ordering can be improved by interchanging
+the order in which two jobs are served.
+I propose to broaden the use of interchange aruments.
+First, when considering a tail metric for job delay,
+I want to use interchange arguments to prove that some scheduling policies are suboptimal,
+and then prove an approximation result when considering the remaining policies.
+Furthermore, I want to consider more than two jobs at a time
+to create a more general kind of interchange argument,
+and thereby rule out more scheduling policies as suboptimal.
 I hope to use interchange arguments as a starting point in the design of
 optimal or near optimal scheduling policies in this setting.
 
@@ -244,7 +243,7 @@ given unknown or approximately known job sizes.
 Replacing mean job delay with a tail metric for job delay
 requires us to switch from the multiarmed bandit problem
 to the restless multiarmed bandit problem (RMAB).
-While the RMAB problem is not understood to the extent that the MAB problem is understood,
+While the RMAB problem is not understood as well as the MAB problem,
 RMAB is understood much better than scheduling for the tail of job delay.
 I hope to apply RMAB theory to scheduling in this setting,
 and thereby derive optimal or near optimal policies for metrics of the tail of job delay,
@@ -279,11 +278,13 @@ To optimize the tail of job delay, I am looking for ways to balance this tradeof
 I research the area of analytical performance optimization of computer systems.
 In this area, the SIGMETRICS/Performance community has a strong understanding
 of optimally scheduling jobs in a single-server system to minimize mean job delay.
-However, almost is known about optimal scheduling in multiserver systems
+However, almost nothing is known about optimal scheduling in multiserver systems
 or when the objective focuses on the tail of job delay,
 Taking on the multiserver system challenge,
-I have proven the first bounds on mean job delay and the first optimality results
-in multiserver systems.
+I have proven
+the first optimality results in multiserver systems
+and
+the first bounds on mean job delay under non-trivial scheduling policies.
 My results apply both to central-queue multiserver systems
 and to load balancing systems.
 Next, I want to take on the tail of job delay.
